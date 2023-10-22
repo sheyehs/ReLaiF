@@ -10,10 +10,12 @@ from PyQt6.QtWidgets import (
     QMainWindow,
     QWidget,
     QLabel,
+    QTextEdit,
     QLineEdit,
+    QPlainTextEdit,
     QVBoxLayout,
 )
-from PyQt6.QtGui import QPixmap, QMouseEvent, QEnterEvent
+from PyQt6.QtGui import QPixmap, QMouseEvent, QEnterEvent, QKeyEvent
 
 WINDOW_X = 100
 WINDOW_Y = 100
@@ -21,6 +23,23 @@ WINDOW_W = 640
 WINDOW_H = 640
 IMAGE_PATH = "./assets/soyo.png"
 
+class TextEdit(QPlainTextEdit):
+    def __init__(self, parent: QWidget | None = ...):
+        super().__init__(parent=parent)
+        self.key_pressed_slot: callable = None
+        
+    def keyPressEvent(self, e: QKeyEvent | None) -> None:
+        """because QTextEdit does not has returnPressed handler"""
+        super().keyPressEvent(e)  # otherwise other hot keys will be abandoned
+        if e.key() == Qt.Key.Key_Return and e.modifiers() == Qt.KeyboardModifier.ShiftModifier and self.hasFocus():
+            # TODO: test Key_Return value on Linux
+            # print("enter")
+            self.key_pressed_slot()
+
+            
+    def setKeyPressedSlot(self, slot: callable):
+        self.key_pressed_slot = slot 
+    
 class Window(QWidget):
     
     def __init__(self):
@@ -39,10 +58,10 @@ class Window(QWidget):
         self.figure.setAlignment(Qt.AlignmentFlag.AlignCenter)  # algin the image to the center
         
         self.chat = QVBoxLayout()
-        self.chatbox = QLineEdit(self)
+        self.chatbox = TextEdit(self)
         self.chatbox.setFixedSize(WINDOW_W, WINDOW_H // 2)
         self.chatbox.setStyleSheet("background-color: rgba(255, 255, 255, 0.8)")
-        self.chatbox.setAlignment(Qt.AlignmentFlag.AlignTop)
+        # self.chatbox.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.chatbox.setPlaceholderText("长久未见。")
         self.chatbox.hide()
         self.chat.addWidget(self.chatbox)
