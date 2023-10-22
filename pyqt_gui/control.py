@@ -17,12 +17,12 @@ class Controller:
     def __init__(self, view: Window):
         self.view = view
         self.chat_model = ChatGPT()
-        self.tts_model = VoicePlayer("芭芭拉")
+        self.tts_model = VoicePlayer("艾丝妲", 1, 1.5)
         self._add_slots()
         # self._connect()
         
     def _add_slots(self):
-        self.view.chatbox.setKeyPressedSlot(partial(self._chat, self.view.chatbox))
+        self.view.chatbox.setKeyPressSlot(partial(self._chat, self.view.chatbox))
 
     def _connect(self):
         self.view.chatbox.connect(partial(self._chat, self.view.chatbox))
@@ -33,20 +33,18 @@ class Controller:
         edit.setFocus()
         
     def _chat(self, edit):
-        edit.setFocus()
-        question = edit.toPlainText()
-        edit.setPlainText("(少女思索中~~~)")
-        edit.show()
+        edit.temp_text = edit.toPlainText()
+        edit.setPlainText("（少女思索中~~~）")
         edit.setReadOnly(True)
-        response = self.chat_model.chat_once(question)
-        edit.setPlainText(response)
-        edit.show()
-        edit.setFocus()
         
-        self.tts_model.request_and_play(response)
+        response = self.chat_model.chat_once(edit.temp_text)
+        # response = "！！只能合成中文字符和部分标点符号！不能合成英语字符和数字。     。对于这些字符会直接跳过。？请转换为发音接近的汉字！！！！"
+        
+        self.tts_model.request_and_play(response, edit)
+        edit.appendPlainText("（少女解释完毕。。。）")
+        
         edit.setReadOnly(False)
         edit.setFocus()
-        
         
     def show(self):
         self.view.show()

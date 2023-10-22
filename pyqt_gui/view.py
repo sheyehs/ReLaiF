@@ -1,9 +1,9 @@
 import sys
 from functools import partial
-import logging
-import typing
+from threading import Thread
+from PyQt6 import QtGui
 
-from PyQt6.QtCore import Qt, QPoint, QEvent
+from PyQt6.QtCore import Qt, QPoint, QEvent, QThread
 from PyQt6.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -25,19 +25,25 @@ IMAGE_PATH = "./assets/soyo.png"
 class TextEdit(QPlainTextEdit):
     def __init__(self, parent: QWidget | None = ...):
         super().__init__(parent=parent)
-        self.key_pressed_slot: callable = None
+        self.key_press_slot: callable = None
+        self.temp_text: str = None
         
     def keyPressEvent(self, e: QKeyEvent | None) -> None:
         """because QTextEdit does not has returnPressed handler"""
         super().keyPressEvent(e)  # otherwise other hot keys will be abandoned
         if e.key() == Qt.Key.Key_Return and e.modifiers() == Qt.KeyboardModifier.ShiftModifier and self.hasFocus():
             # TODO: test Key_Return value on Linux
-            # print("enter")
-            self.key_pressed_slot()
-
+            print("shift+return pressed.")
+            # TODO: find a better async method. Now it will create warnings.
+            thread = Thread(target=self.key_press_slot)
+            thread.start()
+            print("thread started.")
             
-    def setKeyPressedSlot(self, slot: callable):
-        self.key_pressed_slot = slot 
+    def setKeyPressSlot(self, slot: callable):
+        self.key_press_slot = slot 
+        
+    def setKeyReleaseSlot(self, slot: callable):
+        self.key_release_slot = slot 
     
 class Window(QWidget):
     
@@ -65,8 +71,8 @@ class Window(QWidget):
         self.chatbox.hide()
         self.chat.addWidget(self.chatbox)
         self.chat.setAlignment(Qt.AlignmentFlag.AlignBottom)
-        self.setLayout(self.chat)    
-        
+        self.setLayout(self.chat)  
+                
         self.prev_mouse_pos: QPoint = None
  
     # drag and move

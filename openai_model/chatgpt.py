@@ -1,6 +1,7 @@
 import os
 import openai
 from .utils import unicode_to_chinese
+
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 MODEL = "gpt-4"
@@ -21,6 +22,7 @@ class ChatGPT:
         self.model = MODEL
         
     def chat_once(self, new_message: str):
+        print("openai started.")
         new_message = {
             "role": "user",
             "content": new_message,
@@ -32,8 +34,10 @@ class ChatGPT:
         )
         new_response = completion.choices[0]["message"]
         new_response["content"] = unicode_to_chinese(new_response["content"])
-        print(f"{self.model}回复：")
+        print(f"{self.model} response:")
         print(new_response["content"])
         self.messages.append(new_response)
+        
+        print("openai finished.")
 
         return new_response.content
