@@ -12,7 +12,7 @@ github repo (only for training): https://github.com/fishaudio/Bert-VITS2
 URL_TEMPLATE = "https://genshinvoice.top/api?speaker={}&text={}&format=wav&length={}&noise=0.5&noisew={}&sdp_ratio=0.2"
 
 class VoicePlayer:
-    def __init__(self, speaker: str, length: str, noisew: float) -> None:
+    def __init__(self, speaker: str, length: float, noisew: float) -> None:
         self.speaker = speaker
         self.length = str(length)
         self.noisew = str(noisew)
@@ -21,7 +21,7 @@ class VoicePlayer:
         self.punctuations_regx = "(" + "|".join([p + "+" for p in self.punctuations]) + ")"
         
     def request_and_play(self, text: str, edit):
-        print("genshin voice started.")
+        print("genshinvoice started.")
         
         sentences = self._separate_sentences(text)
             
@@ -29,17 +29,27 @@ class VoicePlayer:
         for s in sentences:
             print(f"sentence {i}: {s}")
             url = URL_TEMPLATE.format(self.speaker, s, self.length, self.noisew)
+            print(f"sending url: {url}")
             response = requests.get(url)
             if response.status_code == 200:
+                # TODO: why sometimes will got stuck
+                print("wave file received")
                 if i == 0:
                     edit.clear()
                 edit.appendPlainText(s)
-                winsound.PlaySound(response.content, winsound.SND_MEMORY)
+                print("text appended.")
+                try:
+                    winsound.PlaySound(response.content, winsound.SND_MEMORY | winsound.SND_NODEFAULT)
+                except Exception as e:
+                    print(e)
+                    print("one sentence was skipped")
+                finally:
+                    pass
             else:
                 logging.warning("a request failed.")
             i += 1
             
-        print("genshin voice finished.")
+        print("genshinvoice finished.")
         
         
     def _separate_sentences(self, text: str):

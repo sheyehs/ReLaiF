@@ -66,8 +66,8 @@ class Window(QWidget):
         self.chatbox = TextEdit(self)
         self.chatbox.setFixedSize(WINDOW_W, WINDOW_H // 2)
         self.chatbox.setStyleSheet("background-color: rgba(255, 255, 255, 0.8)")
-        # self.chatbox.setAlignment(Qt.AlignmentFlag.AlignTop)
-        self.chatbox.setPlaceholderText("长久未见。")
+        # self.chatbox.setAlignment(Qt.AlignmentFlag.AlignTop)  # control text layout in the editor
+        # self.chatbox.setPlaceholderText("长久未见。")
         self.chatbox.hide()
         self.chat.addWidget(self.chatbox)
         self.chat.setAlignment(Qt.AlignmentFlag.AlignBottom)
@@ -90,7 +90,6 @@ class Window(QWidget):
     def enterEvent(self, event: QEnterEvent | None) -> None:
         self.chatbox.show()
         self.chatbox.setFocus()
-
         
     def leaveEvent(self, a0: QEvent | None) -> None:
         self.chatbox.hide()
