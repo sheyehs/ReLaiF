@@ -8,6 +8,7 @@ from PyQt6.QtWidgets import QApplication, QLineEdit
 
 sys.path.append("C:\\Users\\sheye\\repos\\ReLaiF")
 from openai_model.chatgpt import ChatGPT
+from tts_model.genshinvoice import VoicePlayer
 
 
 class Controller:
@@ -16,6 +17,7 @@ class Controller:
     def __init__(self, view: Window):
         self.view = view
         self.chat_model = ChatGPT()
+        self.tts_model = VoicePlayer("芭芭拉")
         self._add_slots()
         # self._connect()
         
@@ -32,9 +34,19 @@ class Controller:
         
     def _chat(self, edit):
         edit.setFocus()
-        response = self.chat_model.chat_once(edit.toPlainText())
+        question = edit.toPlainText()
+        edit.setPlainText("(少女思索中~~~)")
+        edit.show()
+        edit.setReadOnly(True)
+        response = self.chat_model.chat_once(question)
         edit.setPlainText(response)
+        edit.show()
         edit.setFocus()
+        
+        self.tts_model.request_and_play(response)
+        edit.setReadOnly(False)
+        edit.setFocus()
+        
         
     def show(self):
         self.view.show()

@@ -2,7 +2,6 @@ import sys
 from functools import partial
 import logging
 import typing
-from PyQt6 import QtCore, QtGui
 
 from PyQt6.QtCore import Qt, QPoint, QEvent
 from PyQt6.QtWidgets import (
@@ -66,8 +65,7 @@ class Window(QWidget):
         self.chatbox.hide()
         self.chat.addWidget(self.chatbox)
         self.chat.setAlignment(Qt.AlignmentFlag.AlignBottom)
-        self.setLayout(self.chat)
-    
+        self.setLayout(self.chat)    
         
         self.prev_mouse_pos: QPoint = None
  

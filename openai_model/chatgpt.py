@@ -32,6 +32,8 @@ class ChatGPT:
         )
         new_response = completion.choices[0]["message"]
         new_response["content"] = unicode_to_chinese(new_response["content"])
+        print(f"{self.model}回复：")
+        print(new_response["content"])
         self.messages.append(new_response)
 
         return new_response.content
