@@ -1,6 +1,7 @@
 import sys
 from functools import partial
 import time
+from threading import Thread
 from view import Window
 
 from PyQt6.QtWidgets import QApplication, QLineEdit
@@ -12,9 +13,10 @@ from openai_model.chatgpt import ChatGPT
 from tts_model.genshinvoice import VoicePlayer
 from asr_model.wav2vec2 import Wav2Vec2
 from asr_model.microphone_recorder import MicrophoneRecorder
+from sa_model.sentiment_analyzer import SentimentAnalyzer
 
 
-LISTEN_PERIOD = 100
+LISTEN_PERIOD = 100  # in ms
 
 class Controller:
     """PyCalc's controller class."""
@@ -29,6 +31,8 @@ class Controller:
         timer = QTimer()
         timer.timeout.connect(self._listen)
         self.timer = timer
+        
+        self.sa_model = SentimentAnalyzer()
         
         self._connect()
         
@@ -52,11 +56,15 @@ class Controller:
         edit.setReadOnly(True)  # text
         print("all inputs were disabled")
         
-        edit.temp_text = edit.toPlainText()
+        send_text = edit.toPlainText()
         edit.setPlainText("（少女思索中~~~）")
         
-        response = self.chat_model.chat_once(edit.temp_text)
+        response = self.chat_model.chat_once(send_text)
         # response = "！！只能合成中文字符和部分标点符号！不能合成英语字符和数字。     。对于这些字符会直接跳过。？请转换为发音接近的汉字！！！！"
+        
+        sa_thread = Thread(target=self._show_feeling, args=[response])
+        sa_thread.start()
+        # self._show_feeling(response)
         
         self.tts_model.request_and_play(response, edit)
         edit.appendPlainText("（少女解释完毕。。。）")
@@ -84,6 +92,11 @@ class Controller:
         
     def _restart_timer(self):
         self.timer.start(LISTEN_PERIOD)
+        
+    def _show_feeling(self, text):
+        feeling = self.sa_model.analyze_once(text)
+        # decouple the control and view by calling a function defined in view
+        self.view.show_feeling(feeling)
         
     def show(self):
         self.view.show()

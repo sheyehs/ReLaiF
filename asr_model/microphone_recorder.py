@@ -67,7 +67,7 @@ class MicrophoneRecorder(object):
         
         if len(frames) > 0:
             volumne =  np.sqrt(np.mean(frames**2))
-            print("time:\t", time.time(),"volume:\t", volumne)
+            # print("time:\t", time.time(),"volume:\t", volumne)
             if self.is_recording:
                 if volumne < self.volume_thresh:
                     self.silence_num += 1

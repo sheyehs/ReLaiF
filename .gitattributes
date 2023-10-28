@@ -1,1 +1,2 @@
-assets/soyo.png filter=lfs diff=lfs merge=lfs -text
+assets/ filter=lfs diff=lfs merge=lfs -text
+test_data_voice/ filter=lfs diff=lfs merge=lfs -text

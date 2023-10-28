@@ -2,6 +2,7 @@ import sys
 from functools import partial
 from threading import Thread
 from PyQt6 import QtGui
+import os
 
 from PyQt6.QtCore import Qt, QPoint, QEvent, QThread
 from PyQt6.QtWidgets import (
@@ -13,14 +14,17 @@ from PyQt6.QtWidgets import (
     QLineEdit,
     QPlainTextEdit,
     QVBoxLayout,
+    QSystemTrayIcon,
+    QMenu,
 )
-from PyQt6.QtGui import QPixmap, QMouseEvent, QEnterEvent, QKeyEvent
+from PyQt6.QtGui import QPixmap, QMouseEvent, QEnterEvent, QKeyEvent, QIcon
 
 WINDOW_X = 100
 WINDOW_Y = 100
 WINDOW_W = 640
 WINDOW_H = 640
-IMAGE_PATH = "./assets/soyo.png"
+ASSETS_PATH = "./assets"
+IMAGE_PATH = "./assets/Sunaookami Shiroko"
 
 class TextEdit(QPlainTextEdit):
     def __init__(self, parent: QWidget | None = ...):
@@ -35,15 +39,12 @@ class TextEdit(QPlainTextEdit):
             # TODO: test Key_Return value on Linux
             print("shift+return pressed.")
             # TODO: find a better async method. Now it will create warnings.
-            thread = Thread(target=self.key_press_slot)
-            thread.start()
+            kp_thread = Thread(target=self.key_press_slot)
+            kp_thread.start()
             print("thread started.")
             
     def setKeyPressSlot(self, slot: callable):
         self.key_press_slot = slot 
-        
-    def setKeyReleaseSlot(self, slot: callable):
-        self.key_release_slot = slot 
     
 class Window(QWidget):
     
@@ -56,9 +57,8 @@ class Window(QWidget):
                 
         self.figure = QLabel("figure", self)  
         self.figure.setFixedSize(WINDOW_W, WINDOW_H)  # must set size to enble AlignCenter
-        image = QPixmap(IMAGE_PATH)
-        image = image.scaled(WINDOW_W, WINDOW_H, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
-        self.figure.setPixmap(image)
+        self._init_images()
+        self.figure.setPixmap(self.images["normal"])
         # self.figure.setStyleSheet("background-color: cyan")
         self.figure.setAlignment(Qt.AlignmentFlag.AlignCenter)  # algin the image to the center
         
@@ -73,6 +73,9 @@ class Window(QWidget):
         self.chat.setAlignment(Qt.AlignmentFlag.AlignBottom)
         self.setLayout(self.chat)  
                 
+        self._set_system_tray_icon()
+                
+        # mouse dragging
         self.prev_mouse_pos: QPoint = None
  
     # drag and move
@@ -94,4 +97,39 @@ class Window(QWidget):
     def leaveEvent(self, a0: QEvent | None) -> None:
         self.chatbox.hide()
         
-
+    def _init_images(self):
+        d = {}
+        for t in ["normal", "happy", "sad"]:
+            image = QPixmap(os.path.join(IMAGE_PATH, f"{t}.png"))
+            image = image.scaled(WINDOW_W, WINDOW_H, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+            d[t] = image
+        self.images = d
+    
+    def show_feeling(self, feeling):
+        feeling = feeling.value
+        if feeling == -1:
+            self.figure.setPixmap(self.images["sad"])
+        elif feeling == 0:
+            self.figure.setPixmap(self.images["normal"])
+        elif feeling == 1 or feeling == 2:
+            self.figure.setPixmap(self.images["happy"])
+        
+    def _set_system_tray_icon(self):
+        icon = QSystemTrayIcon(QIcon(os.path.join(ASSETS_PATH, "system_tray_icon.png")), self)
+        
+        menu = QMenu(self)
+        topAction = menu.addAction("Stays On Top")
+        topAction.setCheckable(True)
+        topAction.setChecked(True)
+        topAction.toggled.connect(partial(self._toggle_stays_on_top, topAction, self))
+        
+        icon.setContextMenu(menu)
+        icon.show()
+        
+    @staticmethod
+    def _toggle_stays_on_top(action, window):
+        if action.isChecked():
+            window.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint)  
+        else:
+            window.setWindowFlags(Qt.WindowType.FramelessWindowHint)  
+        window.show()  # the widget needs to be shown again

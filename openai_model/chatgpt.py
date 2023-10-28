@@ -21,7 +21,7 @@ class ChatGPT:
         self.messages = INITIAL_MESSAGES
         self.model = MODEL
         
-    def chat_once(self, new_message: str):
+    def chat_once(self, new_message: str) -> str:
         print("openai started.")
         new_message = {
             "role": "user",
