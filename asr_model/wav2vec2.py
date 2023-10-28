@@ -8,11 +8,11 @@ import numpy as np
 import torch
 
 MODEL_NAME = "wbbbbb/wav2vec2-large-chinese-zh-cn"
+DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
 class Wav2Vec2(SpeechRecognitionModel):
     def __init__(self) -> None:
-        super().__init__(MODEL_NAME)
-        
+        super().__init__(MODEL_NAME, device=DEVICE)        
         
     @property
     def sampling_rate(self):

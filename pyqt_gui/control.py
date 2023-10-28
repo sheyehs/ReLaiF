@@ -6,7 +6,6 @@ from view import Window
 
 from PyQt6.QtWidgets import QApplication, QLineEdit
 from PyQt6.QtCore import QTimer
-import numpy as np
 
 sys.path.append("C:\\Users\\sheye\\repos\\ReLaiF")
 from openai_model.chatgpt import ChatGPT

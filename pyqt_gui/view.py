@@ -1,7 +1,6 @@
 import sys
 from functools import partial
 from threading import Thread
-from PyQt6 import QtGui
 import os
 
 from PyQt6.QtCore import Qt, QPoint, QEvent, QThread

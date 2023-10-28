@@ -12,7 +12,8 @@ class SentimentAnalyzer:
     def __init__(self) -> None:
         self.model = pipeline(
             model="lxyuan/distilbert-base-multilingual-cased-sentiments-student", 
-            return_all_scores=True
+            return_all_scores=True,
+            device="cuda"
         )
         
     def analyze_once(self, text: str):
